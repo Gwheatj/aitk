@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0,user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="AI题库">
+<meta name="theme-color" content="#f2f3f5">
+<meta property="og:title" content="AI 题库 · 多功能刷题">
+<meta property="og:description" content="405道AI/编程练习题，单选+判断，随时刷题">
+<meta property="og:type" content="website">
+<title>AI 题库 · 多功能刷题</title>
+<style>
+:root{--bg:#f2f3f5;--card2:#fff;--border:rgba(0,0,0,.06);--text:#1a1a1c;--muted:#8e8e93;--accent:#0071e3;--green:#34c759;--red:#ff3b30;--gold:#ff9500;--shadow:0 2px 12px rgba(0,0,0,.06);--radius:18px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(0,113,227,.06)0%,transparent 70%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;bottom:-200px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(52,199,89,.05)0%,transparent 70%);pointer-events:none;z-index:0}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(242,243,245,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.topbar h1{font-size:22px;font-weight:720;letter-spacing:-.3px;color:#1a1a1c}
+.tabs{display:flex;gap:2px;background:rgba(0,0,0,.04);border-radius:10px;padding:3px}
+.tab{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;font-weight:560;padding:7px 16px;border-radius:8px;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--card2);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.share-btn{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:13px;font-weight:560;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.share-btn:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(0,113,227,.12)}
+.tab .badge{font-size:10px;background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;margin-left:4px;font-weight:600;display:none;vertical-align:middle}
+.stats-bar{display:flex;gap:8px;font-size:12px;flex-wrap:wrap}
+.stats-bar span{padding:5px 12px;border-radius:20px;font-weight:560;font-size:11px}
+.s-total{background:rgba(0,113,227,.08);color:var(--accent)}.s-right{background:rgba(52,199,89,.1);color:#1b7a35}.s-wrong{background:rgba(255,59,48,.08);color:var(--red)}
+.main{max-width:900px;margin:0 auto;padding:20px 20px 60px;position:relative;z-index:1}
+.panel{display:none}.panel.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar select,.toolbar button,.toolbar input{padding:8px 16px;border-radius:22px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;cursor:pointer;font-weight:500;transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.toolbar button:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(0,113,227,.12)}
+.toolbar .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.toolbar .btn-primary:hover{opacity:.9;box-shadow:0 4px 16px rgba(0,113,227,.24)}
+.jump{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-left:auto}
+.jump input{width:44px;text-align:center}
+.card{background:var(--card2);border-radius:var(--radius);padding:24px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card .q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.q-tag{font-size:11px;padding:4px 12px;border-radius:20px;background:rgba(0,113,227,.07);color:var(--accent);font-weight:560}
+.q-num{font-size:12px;color:var(--muted);font-weight:500}
+.q-text{font-size:16px;line-height:1.65;margin-bottom:18px;font-weight:480;letter-spacing:.1px}
+.option{display:flex;align-items:center;padding:14px 18px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:all .18s;margin-bottom:8px;font-size:14px;background:rgba(0,0,0,.01)}
+.option:hover{border-color:var(--accent);background:rgba(0,113,227,.03);transform:translateX(2px)}
+.option .dot{min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(0,0,0,.05);font-weight:680;margin-right:14px;font-size:13px;transition:all .18s}
+.option.sel{border-color:var(--accent);background:rgba(0,113,227,.06)}.option.sel .dot{background:var(--accent);color:#fff}
+.option.ok{border-color:var(--green)!important;background:rgba(52,199,89,.08)!important}.option.ok .dot{background:var(--green);color:#fff}
+.option.er{border-color:var(--red)!important;background:rgba(255,59,48,.06)!important}.option.er .dot{background:var(--red);color:#fff}
+.tf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tf-btn{padding:20px;text-align:center;border-radius:14px;border:2px solid var(--border);cursor:pointer;font-size:16px;font-weight:620;background:rgba(0,0,0,.01);transition:all .18s}
+.tf-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.tf-btn.sel{border-color:var(--accent);background:rgba(0,113,227,.06)}.tf-btn.ok{border-color:var(--green)!important;background:rgba(52,199,89,.08)!important;color:#1b7a35}
+.tf-btn.er{border-color:var(--red)!important;background:rgba(255,59,48,.06)!important;color:var(--red)}
+.feedback{padding:12px 18px;border-radius:12px;margin-top:12px;font-weight:560;font-size:14px;display:none}
+.feedback.show{display:block}.feedback.ok{background:rgba(52,199,89,.08);color:#1b7a35}.feedback.er{background:rgba(255,59,48,.06);color:var(--red)}
+.nav-row{display:flex;justify-content:space-between;gap:12px;margin-top:16px}
+.nav-row button{padding:12px 28px;border-radius:22px;border:none;font-weight:600;cursor:pointer;font-size:14px;transition:all .2s}
+.btn-prev{background:rgba(0,0,0,.05);color:var(--text)}.btn-prev:hover{background:rgba(0,0,0,.1)}
+.btn-next{background:var(--accent);color:#fff}.btn-next:hover{opacity:.9;box-shadow:0 4px 16px rgba(0,113,227,.24)}
+.exam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.exam-card{background:var(--card2);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.exam-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);border-color:var(--accent)}
+.exam-card h3{font-size:16px;margin-bottom:6px;font-weight:620}.exam-card .meta{font-size:12px;color:var(--muted)}.exam-card .meta span{margin-right:12px}
+.exam-card .bar{height:5px;background:rgba(0,0,0,.05);border-radius:10px;margin-top:12px;overflow:hidden}
+.exam-card .bar div{height:100%;background:var(--accent);border-radius:10px;transition:width .4s}
+.setup-card{background:var(--card2);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow);text-align:center;max-width:520px;margin:32px auto;border:1px solid var(--border)}
+.setup-card h2{font-size:28px;font-weight:720;letter-spacing:-.3px;margin-bottom:8px}
+.setup-card p{color:var(--muted);margin-bottom:24px;font-size:15px}
+.setup-row{display:flex;gap:18px;justify-content:center;margin-bottom:24px}
+.setup-row label{font-size:13px;color:var(--muted);font-weight:500}
+.setup-row input{width:68px;padding:10px;border-radius:14px;border:2px solid var(--border);background:rgba(0,0,0,.02);text-align:center;font-size:18px;font-weight:600}
+.result-card{background:var(--card2);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow);text-align:center;border:1px solid var(--border)}
+.result-card h2{font-size:22px;font-weight:700;margin-bottom:16px}
+.score-circle{width:160px;height:160px;border-radius:50%;margin:0 auto 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:6px solid var(--accent);background:rgba(0,113,227,.03)}
+.score-circle .big{font-size:40px;font-weight:780;color:var(--accent);letter-spacing:-1px}
+.score-circle .sub{font-size:13px;color:var(--muted)}
+.score-detail{display:flex;justify-content:center;gap:24px;margin-bottom:20px;flex-wrap:wrap}
+.score-detail .item{padding:12px 20px;border-radius:14px;background:rgba(0,0,0,.03)}
+.score-detail .item .val{font-size:24px;font-weight:700}.score-detail .item .lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.wrong-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--card2);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+.wrong-item .info{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrong-item .info .q-text{font-size:13px;margin:0}.wrong-item .info .meta{font-size:11px;color:var(--muted)}
+.wrong-item button{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s;white-space:nowrap}
+.wrong-item button:hover{border-color:var(--red);color:var(--red)}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:var(--card2);border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.15);max-width:600px;width:92%;max-height:76vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:680;margin-bottom:14px}
+.add-search{width:100%;padding:10px 16px;border-radius:14px;border:2px solid var(--border);background:rgba(0,0,0,.02);font-size:14px;margin-bottom:10px}
+.add-list{max-height:340px;overflow-y:auto;border-radius:14px;border:1px solid var(--border)}
+.add-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;gap:10px;border-bottom:none;min-height:0}
+.add-item+.add-item{border-top:1px solid var(--border)}
+.add-item button{padding:5px 14px;border-radius:20px;border:1px solid var(--green);background:none;color:var(--green);cursor:pointer;font-size:11px;font-weight:600}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:15px}
+.timer-bar{display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--card2);border-radius:14px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border);justify-content:space-between}
+.timer-bar .time{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.timer-bar .time.warn{color:var(--red);animation:pulse .6s infinite}
+.timer-bar .label{font-size:12px;color:var(--muted)}
+.timer-bar .max-score{font-size:13px;color:var(--accent);font-weight:600}
+@keyframes pulse{50%{opacity:.5}}
+@media(max-width:768px){
+  .topbar{padding:8px 10px;gap:6px;flex-wrap:wrap}
+  .topbar h1{font-size:17px}
+  .share-btn{padding:6px 10px;font-size:11px;order:1}
+  .tabs{order:3;width:100%;overflow-x:auto;gap:1px;padding:2px;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:7px 11px;font-size:11px;flex-shrink:0}
+  .stats-bar{order:2}
+  .main{padding:10px 10px 50px}
+  .card{padding:16px}
+  .q-text{font-size:15px;line-height:1.6}
+  .option{padding:12px 14px;font-size:13px;min-height:48px;display:flex;align-items:center}
+  .option .dot{min-width:32px;height:32px;font-size:12px}
+  .exam-grid{grid-template-columns:1fr}
+  .tf-row{grid-template-columns:1fr}
+  .tf-btn{padding:16px;font-size:15px;min-height:48px}
+  .setup-card{padding:22px 16px;margin:16px 0}
+  .setup-card h2{font-size:22px}
+  .score-circle{width:110px;height:110px}
+  .score-circle .big{font-size:28px}
+  .timer-bar{padding:8px 14px;flex-wrap:wrap;gap:4px}
+  .timer-bar .time{font-size:16px}
+  .timer-bar .label{font-size:11px}
+  .toolbar{flex-wrap:wrap;gap:6px}
+  .toolbar select,.toolbar button,.toolbar input{padding:8px 12px;font-size:12px;min-height:36px}
+  .jump{margin-left:0;width:100%;justify-content:flex-end}
+  .nav-row button{padding:12px 22px;font-size:13px;min-height:44px}
+  .nav-row{gap:8px}
+  .modal{width:95%;max-height:85vh;padding:16px;border-radius:16px}
+  .wrong-item{flex-wrap:wrap;gap:8px}
+  .wrong-item .info{flex:1 1 100%}
+  .result-card{padding:24px 16px}
+  .score-detail{gap:12px}
+  .score-detail .item{padding:10px 14px}
+  .score-detail .item .val{font-size:20px}
+  .setup-row{flex-direction:column;align-items:center;gap:12px}
+  .btn-prev,.btn-next{min-width:80px;text-align:center}
+}
+
+@media(max-width:400px){
+  .topbar h1{font-size:15px}
+  .tab{padding:6px 8px;font-size:10px}
+  .card{padding:14px}
+  .q-text{font-size:14px}
+  .option{padding:10px 12px;font-size:12px;min-height:44px}
+  .option .dot{min-width:28px;height:28px;font-size:11px;margin-right:10px}
+  .tf-btn{padding:14px;font-size:14px}
+  .score-circle{width:90px;height:90px}
+  .score-circle .big{font-size:24px}
+  .setup-card h2{font-size:20px}
+  .btn-prev,.btn-next{padding:10px 16px;font-size:12px;min-height:40px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<h1>🧠 AI 题库</h1>
+<button class="share-btn" onclick="sharePage()" title="分享">📤 分享</button>
+<div class="tabs" id="tabs">
+<button class="tab active" data-panel="panel-type">📂 题型</button>
+<button class="tab" data-panel="panel-exam">📋 套卷</button>
+<button class="tab" data-panel="panel-random">🎲 组卷</button>
+<button class="tab" data-panel="panel-wrong">📝 错题本<span class="badge" id="wbBadge"></span></button>
+</div>
+<div class="stats-bar"><span class="s-total" id="sTotal"></span><span class="s-right" id="sRight"></span><span class="s-wrong" id="sWrong"></span></div>
+</div>
+
+<div class="main">
+<div class="panel active" id="panel-type">
+<div class="toolbar">
+<select id="typeFilter"><option value="all">全部</option><option value="sc">单选题</option><option value="tf">判断题</option></select>
+<select id="catFilter"><option value="all">全部分类</option></select>
+<button onclick="typeRandom()" style="font-weight:500">🎲 随机</button>
+<button onclick="typeReset()" style="font-weight:500">🔄 重置</button>
+<button id="btnBrowse" onclick="toggleBrowse()" style="font-weight:500">📖 浏览</button>
+<div class="jump" id="jumpQuiz"><span>跳转</span><input id="typeJump" type="number" min="1"><span id="typeTotal">/ 1</span></div>
+</div>
+<div id="typeQuestion"></div>
+</div>
+<div class="panel" id="panel-exam"><div class="exam-grid" id="examGrid"></div></div>
+<div class="panel" id="panel-random"><div id="randomSetup"></div><div id="randomQuiz" style="display:none"></div></div>
+<div class="panel" id="panel-wrong">
+<div class="toolbar">
+<button class="btn-primary" onclick="wbStartPractice()">▶ 刷错题</button>
+<button onclick="wbShowAdd()">➕ 添加</button>
+<button onclick="wbClear()">🗑 清空</button>
+<span style="font-size:13px;color:var(--muted)" id="wbCount"></span>
+</div>
+<div id="wbList"></div><div id="wbPractice" style="display:none"></div>
+</div>
+</div>
+
+<script>
+const byId=id=>document.getElementById(id);
+const Q=[];
+const SC_DATA=[
+[1,"下面关于比特的叙述中，错误的是？",["比特\"1\"大于比特\"0\"","比特既可以表示数值和文字，也可以表示图像和声音","比特只有\"0\"和\"1\"两个符号","比特是组成数字信息的最小单位"],0,"计算机基础"],
+[2,"计算的定义是？",["任何形式的计算","转换数学问题为操作","解决具体问题的过程","将语言转化为数字"],1,"计算机基础"],
+[3,"十六进制数在书写时常在后面加？",["字母B","字母D","字母O","字母H"],3,"计算机基础"],
+[4,"在计算机内，多媒体数据最终以什么形式存在？",["图形","模拟数据","特殊的压缩码","二进制代码"],3,"计算机基础"],
+[5,"某算法时间复杂度为O(n²)，表明？",["问题规模与n²成正比","执行时间与n²成正比","执行时间等于n²","问题规模是n²"],1,"计算机基础"],
+[6,"最原始的计算工具可以追溯到？",["计算器","计算机","小鹅卵石","算盘"],2,"计算机基础"],
+[7,"算盘的起源地是？",["希腊","埃及","中国","印度"],2,"计算机基础"],
+[8,"算盘除了加减乘除，还能计算？",["逻辑运算","开方","微分","字符计算"],1,"计算机基础"],
+[9,"\"布莱克维尔计算器\"能进行？",["逻辑运算","开方和对数","图像处理","字符计算"],1,"计算机基础"],
+[10,"拼音输对了却找不到字，原因可能是？",["输入软件出错","操作系统字符集不含该汉字","显示程序不能正常工作","显示器分辨率不支持"],1,"计算机基础"],
+[11,"Python 的显著特点是？",["只能用于AI开发","专注于硬件","语法简单且可读性强","运行速度快"],2,"Python基础"],
+[12,"Python 中 continue 语句用于？",["抛出异常","终止程序","跳过当前循环迭代继续下一次","退出当前循环"],2,"Python基础"],
+[13,"Python 字典中如何根据键取值？",["dict.find(key)","dict[key]和dict.get(key)都可以","dict.get(key)","dict[key]"],1,"Python基础"],
+[14,"myList.append(x) 的作用？",["替换x","向列表末尾添加x","获取x的索引","删除x"],1,"Python基础"],
+[15,"可将字符串赋值给原本存储整数变量的语言？",["C++","C","Python","Java"],2,"Python基础"],
+[16,"Python 为何是\"胶水语言\"？",["没有实际应用","只能网络编程","容易集成其他语言和工具","只能连接数据库"],2,"Python基础"],
+[17,"面向对象编程的代表语言？",["HTML","汇编语言","Java","C语言"],2,"Python基础"],
+[18,"Python s[1:4] 表示？",["第2到第3个字符","第1到第3个字符","第2到第4个字符","第1到第4个字符"],2,"Python基础"],
+[19,"如何创建空字典？",["newdict=dictionary()","dict()或{}都可以","{}","dict()"],1,"Python基础"],
+[20,"如何获取字符串长度？",["count()方法","length()方法","size()函数","len()函数"],3,"Python基础"],
+[21,"人工智能概念诞生于哪一年？",["1970年","1960年","1956年","1950年"],2,"AI基础"],
+[22,"人工智能概念诞生于哪国？",["美国","中国","法国","英国"],0,"AI基础"],
+[23,"AI是哪两个单词缩写？",["Artificial Information","Automatic Information","Artificial Intelligence","Automatic Intelligence"],2,"AI基础"],
+[24,"弱AI与强AI主要区别？",["应用领域","学习速度","是否具有自我意识","计算能力"],2,"AI基础"],
+[25,"GPT系列属于哪种模型？",["强化学习模型","大型语言模型","语音识别模型","图像生成模型"],1,"AI基础"],
+[26,"生成式人工智能简称？",["GAI","AIG","AIC","CAI"],0,"AI基础"],
+[27,"生成式AI的主要特点？",["逻辑推理","创造性生成","自动执行","自主学习"],1,"AI基础"],
+[28,"下列哪个不是AI应用场景？",["虚拟助手","手工数据录入","实时翻译","金融欺诈检测"],1,"AI基础"],
+[29,"机器学习与传统编程的主要区别？",["ML不需要编程语言","ML依赖数据而非明确规则","传统编程算法更复杂","传统编程不需要数据"],1,"AI基础"],
+[30,"深度学习发展受益于哪三大因素？",["研究/实验/实践","硬件/软件/人才","理论/技术/应用","数据/算力/算法"],3,"AI基础"],
+[31,"深度学习中的\"深度\"指？",["输入数据维度","模型复杂性","网络层数多少","数据量大小"],2,"AI基础"],
+[32,"激活函数的作用？",["优化学习率","增加数据量","调整权重","控制神经元输出"],3,"AI基础"],
+[33,"深度学习训练通常依赖？",["SSD","RAM","GPU","CPU"],2,"AI基础"],
+[34,"注意力机制主要用来？",["分配训练样本权重","提高模型复杂性","关注输入数据关键部分","强化模型训练"],2,"AI基础"],
+[35,"跳跃连接的主要作用？",["仅用于模型压缩","增加计算复杂性","缓解梯度消失问题","降低模型层数"],2,"AI基础"],
+[36,"深度学习主要挑战之一？",["理论基础简单","模型易于解释","需要大量数据和计算资源","易于书写代码"],2,"AI基础"],
+[37,"描述模型对新数据预测能力的术语？",["正则化能力","优化能力","拟合能力","泛化能力"],3,"AI基础"],
+[38,"模型压缩的主要目的？",["加快训练速度","增加参数数量","减少存储和计算需求","提高精度"],2,"AI基础"],
+[39,"训练中如何防止过拟合？",["减少训练次数","减少训练数据","使用更多数据","增加模型复杂性"],2,"AI基础"],
+[40,"MP模型在哪年提出？",["1959年","1953年","1949年","1943年"],3,"AI基础"],
+[41,"第一个神经元数学模型叫？",["MP模型","GAN模型","YOLO模型","BP模型"],0,"AI基础"],
+[42,"感知机模型的限制？",["无法多分类","只能处理线性分类","不需要训练数据","不能用梯度下降"],1,"AI基础"],
+[43,"人无法区分答案来自人还是计算机，则通过了？",["智商测试","图灵测试","丘奇测试","黑盒测试"],1,"AI基础"],
+[44,"智能体环境最接近？",["外部可感知互动的世界","智能体内部学习算法","智能体计算推理模块","智能体决策内存数据"],0,"AI基础"],
+[45,"智能体Agent主要特点？",["无法与环境互动","能自主思考并执行任务","无需自主思考","只能执行简单指令"],1,"AI基础"],
+[46,"智能体设计核心挑战？",["如何节省能源","如何正确感知外部环境并决策","如何确保完全理性","如何设计硬件系统"],1,"AI基础"],
+[47,"深度强化学习结合了深度学习与？",["迁移学习","强化学习","无监督学习","监督学习"],1,"AI基础"],
+[48,"开源模型兴起核心在于？",["无法确定","大语言模型蓬勃发展","独特的自注意力机制","独特的对抗学习机制"],1,"AI基础"],
+[49,"2023年阿里巴巴推出的大模型？",["豆包","通义千问","ChatGPT","文心一言"],1,"AI基础"],
+[50,"为BERT/GPT奠定基础的模型？",["GAN","Transformer","CNN","RNN"],1,"AI基础"],
+[51,"Transformer核心创新？",["固定长度窗口","引入递归神经网络","使用自注意力机制","使用卷积神经网络"],2,"AI基础"],
+[52,"Transformer编码器负责处理？",["输出序列","输入序列","潜在空间分布","噪声数据"],1,"AI基础"],
+[53,"以下哪个是聚类算法？",["逻辑回归","K-means","决策树","K-近邻"],1,"机器学习"],
+[54,"聚类分析的\"簇\"指？",["待分组样本","分好组的样本","已删除样本","同类样本"],1,"机器学习"],
+[55,"K均值聚类更新步骤包括？",["选择新聚类算法","增加新样本","重新计算聚类中心","选择新K值"],2,"机器学习"],
+[56,"kNN确定k个最近邻居靠？",["预处理方法","特征数量","样本间距离度量","样本类别标签"],2,"机器学习"],
+[57,"可用于解决分类问题的算法？",["密度距离","K-means","线性回归","K-近邻"],3,"机器学习"],
+[58,"线性回归模型的假设？",["目标变量服从均匀分布","特征与目标存在线性关系","误差项具有相关性","特征与目标非线性"],1,"机器学习"],
+[59,"线性回归最小化损失函数的方法？",["随机森林","决策树","K-均值","梯度下降"],3,"机器学习"],
+[60,"因简单普遍被广泛使用的回归算法？",["线性回归","逻辑回归","支持向量回归","多项式回归"],0,"机器学习"],
+[61,"适用于线性回归的评估指标？",["方差","标准差","错误率","均方误差"],3,"机器学习"],
+[62,"因变量与多个自变量相关称为？",["逻辑回归","支持向量回归","多元回归","多项式回归"],2,"机器学习"],
+[63,"半监督学习的特点是？",["不使用任何数据","结合有标签和无标签数据","只使用无标签数据","只使用有标签数据"],1,"机器学习"],
+[64,"半监督学习的关键是利用？",["少量有标签数据","使用更简单模型","大量无标签数据","少量有标签+大量无标签数据"],3,"机器学习"],
+[65,"迁移学习的目的是？",["限制模型复杂性","仅处理图像数据","利用已有知识解决新问题","完全依赖新数据集"],2,"机器学习"],
+[66,"LDA主要优势是？",["计算速度快","适应性强","可同时降维与分类","能处理多分类问题"],2,"机器学习"],
+[67,"LDA对新样本分类首先需？",["调整模型","直接根据特征分类","投影到预先确定的直线上","计算与所有训练样本距离"],2,"机器学习"],
+[68,"SVM如何解决线性不可分？",["在原空间找非线性函数","特征工程处理","核方法映射至高维空间","无法解决"],2,"机器学习"],
+[69,"情感预测属于哪类ML任务？",["关联规则学习","分类问题","聚类问题","回归问题"],1,"机器学习"],
+[70,"数据清洗目的不包括？",["确保数据质量","去除不相关信息","增加重复内容","去除噪声"],2,"机器学习"],
+[71,"常用于数据可视化的工具？",["Spark","Matplotlib","Hadoop","TensorFlow"],1,"机器学习"],
+[72,"模型评估优化阶段不包括？",["持续优化模型","增加模型参数数量","进行错误分析","使用各种评估指标"],1,"机器学习"],
+[73,"卷积层的主要作用？",["生成图像","分类图像","提取图像特征","降低图像分辨率"],2,"深度学习-CNN"],
+[74,"CNN卷积层主要用于？",["回归","分类","特征降维","特征提取"],3,"深度学习-CNN"],
+[75,"卷积操作的主要目的？",["防止过拟合","降低计算复杂度","提取特征","增加特征数量"],2,"深度学习-CNN"],
+[76,"典型CNN主要由哪些层组成？",["仅有卷积+池化","隐藏层+输入层+输出层","卷积层+池化层+全连接层","卷积层+全连接层+输出层"],2,"深度学习-CNN"],
+[77,"CNN主要受哪个领域启发？",["物理学","生物学","化学","心理学"],1,"深度学习-CNN"],
+[78,"CNN端到端意味着？",["不需要训练","只涉及卷积层","需多个阶段处理","从输入到输出直接映射"],3,"深度学习-CNN"],
+[79,"反向传播算法主要目的？",["选择激活函数","初始化参数","更新权重","计算输出"],2,"深度学习-CNN"],
+[80,"反向传播误差如何传递？",["通过权重矩阵","通过激活函数","从输出层向输入层","从输入层向输出层"],2,"深度学习-CNN"],
+[81,"图像识别哪种网络更好？",["多层感知机","循环神经网络","感知机","卷积神经网络"],3,"深度学习-CNN"],
+[82,"ResNet主要贡献？",["解决深层梯度消失","实现序列并行处理","提出无监督逐层预训练","生成高质量图像"],0,"深度学习-CNN"],
+[83,"RNN与传统前馈网络主要区别？",["只能处理短序列","具有记忆功能","网络结构更简单","计算速度快"],1,"深度学习-RNN/LSTM"],
+[84,"RNN主要用于？",["特征提取","图像生成","序列数据处理","图像分类"],2,"深度学习-RNN/LSTM"],
+[85,"LSTM是哪种网络？",["自编码网络","生成对抗网络","循环神经网络","卷积神经网络"],2,"深度学习-RNN/LSTM"],
+[86,"GRU重置门主要用于？",["防止过拟合","保持长期记忆","控制信息流出","控制信息流入"],3,"深度学习-RNN/LSTM"],
+[87,"双向循环层主要用于？",["处理前后文信息","完全不相关","输出文本","仅接收输入"],0,"深度学习-RNN/LSTM"],
+[88,"GAN生成器的输入通常是？",["标签数据","随机噪声","真实数据样本","预训练特征"],1,"GAN"],
+[89,"GAN生成器主要任务？",["减少训练误差","训练判别器","生成新数据样本","评估数据准确性"],2,"GAN"],
+[90,"GAN判别器主要任务？",["图像降噪","数据分类","评估生成数据真实性","生成虚假数据"],2,"GAN"],
+[91,"GAN中\"造假者\"是？",["编码器","生成器","判别器","解码器"],1,"GAN"],
+[92,"生成器优化欺骗判别器的过程？",["评估","对抗","优化","训练"],1,"GAN"],
+[93,"不是GAN应用的是？",["数据增强","文本生成","图像到图像转换","语音识别"],3,"GAN"],
+[94,"GAN主要应用？",["时间序列预测","聚类分析","回归分析","图像生成"],3,"GAN"],
+[95,"GAN主要应用于？",["文本分析","数据压缩","图像生成","语音识别"],2,"GAN"],
+[96,"《埃德蒙·贝拉米肖像》用了什么？",["强化学习","自动化学习","生成对抗网络","卷积神经网络"],2,"GAN"],
+[97,"常用于生成式AI的方法？",["K-均值","支持向量机","生成对抗网络","决策树"],2,"GAN"],
+[98,"不是生成式模型优势？",["保证生成数据绝对真实","处理无监督学习","表示复杂数据分布","创造新数据"],0,"GAN"],
+[99,"不适合用生成式AI？",["语音识别","预测股票价格","文本生成","图像修复"],1,"GAN"],
+[100,"不适合用生成式AI(二)？",["客服机器人","虚拟主播","舆情分析","图像分类"],3,"GAN"],
+[101,"不是生成式AI创意产业应用？",["游戏设计","电影剧本","广告创意生成","财务报表审计"],3,"GAN"],
+[102,"生成式AI医疗应用不包括？",["个性化治疗","药物研发","辅助诊断","手术操作"],3,"GAN"],
+[103,"生成模型在自动驾驶潜在用途？",["改善燃油效率","监控驾驶员行为","控制方向盘","生成模拟驾驶环境"],3,"GAN"],
+[104,"扩散模型在图像生成领域成就？",["优化图像压缩","加速图像渲染","生成高分辨率图像","提高分类准确性"],2,"GAN"],
+[105,"扩散模型正向过程主要是？",["特征提取","按规则添加噪声","去除噪声","生成新数据"],1,"GAN"],
+[106,"变分自编码器简称？",["GLM","VAE","GAI","GAN"],1,"VAE"],
+[107,"VAE编码器将高维数据映射到？",["原始数据空间","低维潜在空间","高维潜在空间","特征空间"],1,"VAE"],
+[108,"VAE编码器作用？",["计算生成模型损失","从噪声恢复数据","生成新样本","将数据压缩成低维表示"],3,"VAE"],
+[109,"不是VAE卓越特性？",["高效训练速度","语义连续性","强大生成能力","良好可解释性"],0,"VAE"],
+[110,"VAE潜在空间正确描述？",["没有明确物理意义","维度与输入相同","是离散的","低维连续平滑表示，捕捉数据主要特征"],3,"VAE"],
+[111,"CV涉及主要技术包括？",["音频/信号处理","数据挖掘/分析","NLP/机器翻译","图像处理/特征提取/目标检测与识别"],3,"计算机视觉"],
+[112,"图像特征定义是？",["文件大小","图像格式","图像组成部分和重要信息","仅颜色深浅"],2,"计算机视觉"],
+[113,"CV中\"特征\"一般指？",["图像格式","图像平均值","能帮助识别分类的重要信息","颜色和亮度等基本属性"],2,"计算机视觉"],
+[114,"CV与其他AI领域结合主要体现在？",["仅限特定任务","限制算法使用","多模态学习与跨领域应用","只关注图像处理"],2,"计算机视觉"],
+[115,"CV深度学习普及主要得益于？",["只专注小规模","数据集减少","算法和硬件进步","仅靠传统模型"],2,"计算机视觉"],
+[116,"深度学习与传统机器视觉主要区别？",["传统不用图像处理","深度学习自主学习提取特征","传统自主学习提取特征","深度学习需人工设计特征"],1,"计算机视觉"],
+[117,"CV中的经典任务是？",["图像降噪","图像分类","图像超分辨率","图像风格迁移"],1,"计算机视觉"],
+[118,"滤波操作的目的是？",["限制图像大小","仅用于压缩","移除噪声与干扰","提高清晰度"],2,"计算机视觉"],
+[119,"可改善图像质量的预处理？",["随机裁剪","降低分辨率","直方图均衡化","添加噪声"],2,"计算机视觉"],
+[120,"模仿艺术家风格生成作品的技术？",["目标检测","语义分割","超分辨率重建","风格迁移"],3,"计算机视觉"],
+[121,"CV迁移学习主要优势？",["无需数据预处理","只需一次性训练","不需标注数据","能在较少数据上训练高效模型"],3,"计算机视觉"],
+[122,"图像分类中迁移学习指？",["完全依赖人工标注","学习新图像格式","利用已有模型知识解决新任务","格式转换"],2,"计算机视觉"],
+[123,"SLAM主要应用？",["视频生成","图像分类","实时定位与地图构建","目标检测与追踪"],2,"计算机视觉"],
+[124,"AR中三维重建物体定位常用？",["激光扫描","单目视觉","目标追踪","立体视觉"],3,"计算机视觉"],
+[125,"MNIST数据集主要用于？",["NLP","目标检测","图像分类","图像生成"],2,"计算机视觉"],
+[126,"YOLO算法模型的输出是？",["边缘信息","分割掩码","每个位置目标框坐标和类别概率","图像类别概率"],2,"目标检测"],
+[127,"目标检测数据集标注通常包括？",["图像背景信息","拍摄时间","每个目标的类别和位置","图像作者"],2,"目标检测"],
+[128,"目标检测中\"回归\"通常指？",["图像标注","边界框坐标调整","图像预处理","物体分类"],1,"目标检测"],
+[129,"目标检测中\"回归\"用于？",["限制样本数量","只关注类别识别","精确定位目标边界框","仅限数据存储"],2,"目标检测"],
+[130,"典型目标检测数据集包含？",["都是","类别信息","标注数据","图像数据"],0,"目标检测"],
+[131,"IoU用于评估？",["模型复杂性","数据集大小","检测框重叠度","训练时间"],2,"目标检测"],
+[132,"目标检测中AP表示？",["网络训练进度","平均精度(Average Precision)","物体分类精度","图像平均颜色值"],1,"目标检测"],
+[133,"目标检测算法改进侧重？",["完全不需要更新","限制模型使用","加快检测速度与提高精度","提高计算复杂性"],2,"目标检测"],
+[134,"目标检测常见评价指标？",["SSIM","MSE","精确度和召回率","Accuracy"],2,"目标检测"],
+[135,"目标检测训练通常需要？",["简单图像操作","只需单一类别样本","带有标签的训练数据","大量未标记数据"],2,"目标检测"],
+[136,"提高目标检测性能通常关注？",["手动特征提取","模型复杂性","数据集多样性与质量","计算资源节省"],2,"目标检测"],
+[137,"PASCAL VOC数据集主要用于？",["数据挖掘","NLP","目标检测","语音识别"],2,"目标检测"],
+[138,"Fast R-CNN相比R-CNN优势？",["仅适用小型图像","增加计算时间","不需要计算每个候选区域特征","更复杂网络结构"],2,"目标检测"],
+[139,"加速R-CNN最大改进？",["增加处理时间","使用更复杂算法","在特征图上处理候选区域","增加更多参数"],2,"目标检测"],
+[140,"RPN在Faster R-CNN中的作用？",["只用于信息存储","提高图像质量","自动生成候选区域","用于图像处理"],2,"目标检测"],
+[141,"语义分割主要任务？",["压缩图像","改变颜色","将每个像素分配给预定义语义类别","识别单一目标"],2,"语义分割"],
+[142,"语义分割中argmax作用？",["限制输出范围","仅用于图像增强","获取每个像素的类别索引","增加计算复杂性"],2,"语义分割"],
+[143,"语义分割argmax作用(二)？",["限制模型输出","仅用于特征提取","选择每个像素的最大类别","提取边缘信息"],2,"语义分割"],
+[144,"U-Net的特点？",["基于GAN","只关注图像边缘","对称编码器和解码器结构","用于图像分类"],2,"语义分割"],
+[145,"语义分割损失函数通常用？",["生成对抗损失","对比损失","均方误差","交叉熵损失"],3,"语义分割"],
+[146,"语义分割成功案例不包括？",["遥感图像处理","传统视频编辑","自动驾驶场景理解","医学影像分析"],1,"语义分割"],
+[147,"语义分割与目标检测主要区别？",["二者无区别","目标检测要求更高精度","分割是像素级，检测是框级","分割只关注整体"],2,"语义分割"],
+[148,"语义分割能广泛应用领域？",["仅限艺术创作","仅用于图像分类","自动驾驶与卫星图像分析","数据存储"],2,"语义分割"],
+[149,"语义分割输出可用于？",["限制在数据整理","仅限于图像分类","自动驾驶/医学影像分析","仅限于背景处理"],2,"语义分割"],
+[150,"DeepLabv3+模型特点？",["限制数据集大小","只处理黑白图像","使用空洞卷积增大感受野","专注于图像分类"],2,"语义分割"],
+[151,"DeepLabv3+空洞卷积实现？",["仅处理静态图像","降低网络深度","增加感受野捕获多尺度信息","增加计算量"],2,"语义分割"],
+[152,"PSPNet金字塔池化作用？",["限制特征图尺寸","简化网络结构","捕获全局上下文信息","减少计算量"],2,"语义分割"],
+[153,"常用于图像分类的损失函数？",["hinge损失","均方误差损失","交叉熵损失","L1位置损失"],2,"语义分割"],
+[154,"NLP中跨语言翻译用？",["特征工程","机器翻译","数据清洗","文本向量化"],1,"NLP"],
+[155,"NLP中减少数据稀疏性用？",["特征降维(词嵌入)","特征工程","特征缩放","特征选择"],0,"NLP"],
+[156,"处理同义词提高语义匹配？",["停用词过滤","词干提取","同义词替换","词形还原"],2,"NLP"],
+[157,"去除文本噪声提高性能？",["特征选择","数据增强","特征缩放","数据清洗"],3,"NLP"],
+[158,"分词的定义是？",["提高文本质量","仅语法分析","合并多个文本","拆分为单词或短语"],3,"NLP"],
+[159,"将文本转为向量表示？",["命名实体","语义网络","句法树","词嵌入"],3,"NLP"],
+[160,"词嵌入是什么技术？",["情感分析统计方法","生成对话算法","图像转文本","文本转数字向量"],3,"NLP"],
+[161,"揭示词间依存关系的是？",["依存句法分析","词嵌入","语义网络","句法树"],0,"NLP"],
+[162,"句法分析基本目标？",["仅提取关键词","完全依赖图像","剖析句子结构","识别文本情感"],2,"NLP"],
+[163,"对文本进行结构化表示？",["文本摘要","词性标注","句法分析","语义解析"],2,"NLP"],
+[164,"语义理解主要涉及？",["处理图像数据","仅关心句子结构","深入挖掘文本含义","词法分析"],2,"NLP"],
+[165,"词性标注能提供？",["词的语法功能","仅限于字母数","词的来源","词的发音"],0,"NLP"],
+[166,"NLP主要目标？",["限制人机交互","仅用于文本编辑","完全依赖编程","使计算机理解生成人类语言"],3,"NLP"],
+[167,"NLP可广泛应用于？",["仅限学术研究","只处理社交媒体","智能客服/机器翻译/情感分析等","仅限于计算机科学"],2,"NLP"],
+[168,"信息抽取常识别？",["用户反馈","文本长度","关键词和实体","语法规则"],2,"NLP"],
+[169,"文本摘要的作用？",["仅关注语法","增加文本冗余","限制文章长度","提炼核心内容"],3,"NLP"],
+[170,"文本摘要目的是？",["限制信息传递","仅处理图像数据","从冗长文章提炼核心信息","增加文本长度"],2,"NLP"],
+[171,"词袋模型忽略了？",["单词出现频率","单词拼写","单词词性","单词顺序"],3,"NLP"],
+[172,"处理一词多义问题用？",["停用词过滤","词干提取","词形还原","词义消歧"],3,"NLP"],
+[173,"推荐系统主要依赖？",["完全不考虑用户意见","仅限于产品图片","语法规则","用户历史行为和语义偏好"],3,"NLP"],
+[174,"不同语言对齐以便翻译？",["文本对齐","特征工程","数据清洗","文本向量化"],0,"NLP"],
+[175,"Python NLP文本预处理工具？",["Pandas","Scikit-learn","TensorFlow","NLTK"],3,"NLP"],
+[176,"Python中NLP工具库？",["OpenCV","NLTK","NumPy","TensorFlow"],1,"NLP"],
+[177,"NLP模型评估比较工具？",["TensorFlow","HuggingFace Datasets和Metrics","sklearn","NLTK"],1,"NLP"],
+[178,"命名实体识别NER用于？",["句子重写","翻译不同语言","精准定位文本关键实体","提取情感色彩"],2,"NLP"],
+[179,"自然语言生成NLG指？",["处理图像数据","只关心用户输入","仅进行文本分类","将计算机思维以自然语言表达"],3,"NLP"],
+[180,"NLTK词性标注输出？",["用户输入文本","整个句子长度","每个词语法类别","每个词发音"],2,"NLP"],
+[181,"处理长文本序列常用？",["朴素贝叶斯","SVM","LSTM","CNN"],2,"NLP"],
+[182,"GPT是哪种类型模型？",["分类模型","生成式模型","回归模型","聚类模型"],1,"GPT/大模型"],
+[183,"GPT预训练过程主要做？",["优化训练速度","提高计算效率","学习文本语言模式","进行图像分类"],2,"GPT/大模型"],
+[184,"谷歌翻译主要用哪种NLP技术？",["情感分析","文本分类","机器翻译","语音识别"],2,"机器翻译"],
+[185,"机器翻译系统常用算法？",["朴素贝叶斯","神经网络","SVM","决策树"],1,"机器翻译"],
+[186,"机器翻译神经网络优势？",["限制语言种类","仅处理少量数据","提高翻译质量减少错误","只能翻译简单句子"],2,"机器翻译"],
+[187,"机器翻译统计模型是？",["完全不准确","单一语言处理","仅依赖用户输入","结合翻译模型和语言模型"],3,"机器翻译"],
+[188,"机器翻译统计模型作用？",["只处理单一语言","限制翻译准确性","将源语言转换为目标语言","仅支持图像处理"],2,"机器翻译"],
+[189,"机器翻译端到端学习指？",["限制翻译内容","手动调整每部分","从输入到输出全程由模型处理","仅依赖单一模型"],2,"机器翻译"],
+[190,"语音识别技术输入通常是？",["编程代码","图像文件","原始语音信号","文本数据"],2,"语音"],
+[191,"语音识别基本步骤不包括？",["输出层","隐层","输入层","文件压缩"],3,"语音"],
+[192,"语音识别隐层负责？",["仅限输入信号","输出最终结果","提取音频特征并语义理解","接收原始文本"],2,"语音"],
+[193,"语音合成主要应用？",["文本转自然语音","限制数据输入","仅语法分析","仅限于图像处理"],0,"语音"],
+[194,"TTS工作过程不包括？",["语音合成","语言分析","直接生成视频","文本预处理"],2,"语音"],
+[195,"文本情绪\"极性\"指？",["句子难易程度","语法复杂程度","正面/负面或中立","文本长度"],2,"情感分析"],
+[196,"情感分析可广泛应用于？",["完全不相关","仅内部邮件","产品评论和社交媒体监测","仅限于商业广告"],2,"情感分析"],
+[197,"情感分析重要性体现？",["限制数据获取","仅关注个人观点","处理非结构化文本提供业务价值","仅限于市场调查"],2,"情感分析"],
+[198,"提高情感分析准确性？",["根据用户偏好","精确情感字典和规则","随机选择文本","限制数据输入"],1,"情感分析"],
+[199,"聊天机器人主要功能？",["限制用户访问","仅语音识别","模拟人类对话互动","处理图像数据"],2,"情感分析"],
+[200,"通过提示工程可实现？",["减少内存需求","替代高级硬件","提高内在计算能力","使通用模型适应特定任务"],3,"提示工程"],
+[201,"不是有效提示设计技巧？",["使用模糊歧义表述","包含必要背景信息","指定输出格式","使用清晰具体语言"],0,"提示工程"],
+[202,"提示工程中\"指令\"？",["模型输出结果","模型超参数设置","用户提供的具体任务描述","模型训练数据"],2,"提示工程"],
+[203,"提示工程在NLP中作用？",["减少模型参数","增强对特定任务适应性","提高计算效率","降低泛化能力"],1,"提示工程"],
+[204,"提示中角色扮演目的？",["增加多样性","减少计算成本","增强代入感和输出质量","提高娱乐性"],2,"提示工程"],
+[205,"提示工程重要性不包括？",["增强可控性","提高成本","任务适应","提高输出质量"],1,"提示工程"],
+[206,"提示库管理不包括？",["替代模型训练","删除过时提示","定期审查更新提示","存储优化提示"],0,"提示工程"],
+[207,"动态提示生成适用？",["任务简单直接","模型已充分训练","用户需求多变需个性化响应","用户需求固定不变"],2,"提示工程"],
+[208,"设计提示词不推荐？",["保持逻辑顺序","使用复杂冗长表述","使用具体明确指令","包含必要背景"],1,"提示工程"],
+[209,"文生文模型适用？",["音乐创作","写作辅助","影视制作","图像处理"],1,"提示工程"],
+[210,"大数据最准确描述？",["数据量大无法用传统工具处理","仅指结构化数据","互联网公开信息","个人电脑硬盘数据"],0,"大数据"],
+[211,"数据增强主要目的？",["仅用于测试集","减少训练时间","增加模型复杂性","生成更多训练样本"],3,"大数据"],
+[212,"数据安全措施不包括？",["增加数据冗余","监控数据访问","访问控制","数据加密"],0,"大数据"],
+[213,"AI风险管理应包括？",["增加资本投入","拒绝外部输入","自动关闭系统","监测与预警"],3,"AI伦理安全"],
+[214,"AI安全保护系统？",["用户体验","显示效果","速度和效率","完整性/可用性和鲁棒性"],3,"AI伦理安全"],
+[215,"不属于AI基本安全风险？",["硬件磨损风险","应用安全风险","数据安全风险","系统安全风险"],0,"AI伦理安全"],
+[216,"AI物理攻击可能造成？",["用户信任","数据整合","硬件损坏","改善性能"],2,"AI伦理安全"],
+[217,"AI伦理主要考虑？",["市场需求","技术可行性","人类价值观","经济效益"],2,"AI伦理安全"],
+[218,"关于AI伦理不正确的是？",["需法律法规指导","优先经济效益伦理后解决","防止加剧社会不平等","AI决策透明可解释"],1,"AI伦理安全"],
+[219,"偏见检测与纠正重要性？",["确保持续自我更新","保证所有环境高效运行","防止基于不公正数据决策","确保不因错误输入故障"],2,"AI伦理安全"],
+[220,"脑机接口监控学生引发？",["师生关系","学习效率","未成年人隐私","教育公平"],2,"AI伦理安全"],
+[221,"提升算法透明度可帮助？",["提高数据加密强度","发现和纠正偏见","加快算法执行","减少数据存储成本"],1,"AI伦理安全"],
+[222,"AI致损责任归属主要涉及？",["操作人员技术水平","损害发生具体情境","AI开发语言","机器人外观设计"],1,"AI伦理安全"],
+[223,"AI未来技术发展趋势？",["只关注单一数据","限制数据使用","促进多模态信息融合","增加人工干预"],2,"AI伦理安全"],
+[224,"AI未来发展关注重点？",["扩大市场范围","增强可解释性及监管","降低技术门槛","提高算法复杂性"],1,"AI伦理安全"],
+[225,"匿名化处理的目的？",["增加存储空间","改善用户体验","保护用户数据隐私","提高处理速度"],2,"AI伦理安全"],
+[226,"算法服务提供者应当？",["仅关注效率","诱导用户沉迷","不定期审核","建立健全算法审核和科技伦理审查"],3,"AI伦理安全"],
+[227,"CV在电商平台作用？",["完全依赖人工客服","仅提供商品信息","限制商品选择","提升用户体验和购买效率"],3,"AI应用-视觉"],
+[228,"CV医学影像分析应用？",["完全依赖医生判断","限制数据收集","辅助诊断与病灶检测","仅用于图像传输"],2,"AI应用-视觉"],
+[229,"CV在农业潜在应用？",["限制产品质量","仅限于作物收割","植物生长监测与病虫害检测","增加化肥使用"],2,"AI应用-视觉"],
+[230,"CV如何影响未来医疗？",["完全依赖人工","仅用于图像存档","提高诊断准确性与效率","限制医生决策"],2,"AI应用-视觉"],
+[231,"CV促进工业自动化？",["仅用于数据记录","限制生产线灵活性","提高产品检测与质量控制效率","仅依赖人工操作"],2,"AI应用-视觉"],
+[232,"CV社交媒体优化体验？",["完全依赖用户反馈","仅处理帖子评论","提供精准内容推荐","限制内容生成"],2,"AI应用-视觉"],
+[233,"CV房地产行业应用？",["完全依赖人工审查","仅处理文书","房产评估与市场趋势分析","限制市场分析"],2,"AI应用-视觉"],
+[234,"CV如何改善客户体验？",["完全无效","仅依赖用户反馈","提供个性化推荐与互动","限制产品选择"],2,"AI应用-视觉"],
+[235,"制造业CV应用体现？",["市场营销","人力资源管理","产品质量检测与自动化生产","财务管理"],2,"AI应用-视觉"],
+[236,"智能监控CV用于？",["图像生成","图像压缩","图像超分辨率","目标检测与人脸识别"],3,"AI应用-视觉"],
+[237,"人脸识别闸机双重验证？",["指纹+验证码","虹膜+身份证","人脸+身份证","人脸+护照"],2,"AI应用-视觉"],
+[238,"伞齿轮缺陷检测用？",["激光扫描","单目视觉检测","多目视觉检测","红外线检测"],2,"AI应用-视觉"],
+[239,"智慧卧室智能床不具备？",["自动播放电视","监测心率和呼吸","睡前按摩放松","调节角度"],0,"AI应用-智慧生活"],
+[240,"智慧出行实时感知靠？",["磁力感应","声纳","无线电波","卫星定位"],3,"AI应用-智慧生活"],
+[241,"不是智能灯光支持模式？",["聚会模式","都可以","离家模式","电影模式"],1,"AI应用-智慧生活"],
+[242,"智能洗衣机识别因素？",["天气","用户日程","衣物材质数量和脏污程度","衣物颜色和品牌"],2,"AI应用-智慧生活"],
+[243,"智能电视分析用户习惯用？",["NLP","机器学习算法","VR","AR"],1,"AI应用-智慧生活"],
+[244,"顺丰LPSS子系统用于？",["智能路线规划","车辆装载率分析","实时监测违规事件","监测中转场装卸口"],3,"AI应用-智慧生活"],
+[245,"智慧物流2025市场规模？",["万亿","1000亿","500亿","100亿"],0,"AI应用-智慧生活"],
+[246,"不是智慧物流应用场景？",["手动配送","无人机物流","自动化分拣","无人仓"],0,"AI应用-智慧生活"],
+[247,"关于智能音乐系统正确？",["只能播放指定歌曲","不能根据气氛调整","可语音命令控制","无法根据行为动态调整"],2,"AI应用-智慧生活"],
+[248,"自动驾驶依赖什么感知？",["微波","红外线","超声波","激光雷达"],3,"AI应用-智慧生活"],
+[249,"未来AI娱乐产业主要角色？",["完全AI主持直播","人类艺术家失业","分析观众偏好定制内容","AI完全创作音乐电影"],2,"AI应用-影视娱乐"],
+[250,"AI影视特效增强沉浸感？",["提供个性化推荐","创建复杂视觉元素","自动生成剧本","优化音效"],1,"AI应用-影视娱乐"],
+[251,"影视制作中AI可用于？",["优化设计模型","生成陶瓷图案","提供用户评论分析","自动生成剧本草案"],3,"AI应用-影视娱乐"],
+[252,"AI音乐演出应用技术？",["图像识别","视频编辑","语音识别","自动化音效生成"],3,"AI应用-影视娱乐"],
+[253,"RFID野生动植物保护作用？",["远程控制","数据存储","实时定位和感知","自动识别物种"],2,"AI应用-林业遥感"],
+[254,"无人机林火监测优势？",["仅限高空监控","深入火场采集并搭载灭火装置","只能后期参与","只能初期采集"],1,"AI应用-林业遥感"],
+[255,"火灾监测信息传输到？",["新闻网站","消防部门","电视台","声光报警器/手机电脑客户端"],3,"AI应用-林业遥感"],
+[256,"智慧森林监测核心？",["单一传感","手工记录","现代信息技术","传统人工管理"],2,"AI应用-林业遥感"],
+[257,"无人机监测病虫害拍摄？",["周围环境","中部区域","上部树叶","根部"],2,"AI应用-林业遥感"],
+[258,"病虫害AI对比什么？",["土壤监测数据","天气预报","受害树木数据库","健康状态森林数据库"],3,"AI应用-林业遥感"],
+[259,"不属于森林遥感技术？",["地面测绘","微波雷达","激光雷达","多光谱成像"],0,"AI应用-林业遥感"],
+[260,"高光谱成像主要应用？",["测量温度分布","分析土壤营养","检测光合效率","捕捉波长生成光谱图像"],3,"AI应用-林业遥感"],
+[261,"热红外成像表示温度靠？",["可见光图像","颜色或灰度","激光脉冲","光谱图像"],1,"AI应用-林业遥感"],
+[262,"近红外林木育种应用？",["树干体积估算","气体交换分析","土壤水分测量","木质素含量测定"],3,"AI应用-林业遥感"],
+[263,"智慧林木育种获取表征？",["地面雷达","无人机和手持传感器","遥感平台","卫星成像"],1,"AI应用-林业遥感"],
+[264,"东北虎豹公园识别？",["古树名木","东北虎/东北豹/梅花鹿","梅花鹿/麋鹿","大熊猫/滇金丝猴"],1,"AI应用-林业遥感"],
+[265,"林业物联网主要实现？",["气象数据预测","动植物分类","数据存储和备份","实时信息交换和通信"],3,"AI应用-林业遥感"],
+[266,"深度学习材料科学应用不包括？",["基因分析","图像识别","材料性质预测","材料设计"],0,"AI应用-其他"],
+[267,"斯坦福小镇项目主要目标？",["提升AI图像识别","创建全球首个AI城市","研究AI虚拟世界社交行为","开发自动驾驶"],2,"AI应用-其他"],
+[268,"三维重建立体匹配目的？",["提高图像清晰度","生成深度图","图像分类","图像压缩"],1,"AI应用-其他"],
+[269,"图的最基本构成要素？",["边和队列","顶点和队列","点和路径","点和边"],3,"AI应用-其他"],
+[270,"智慧卧室智能床不具备？",["自动播放电视","监测心率和呼吸","睡前按摩放松","调节角度"],0,"AI应用-其他"],
+];
+const TF_DATA=[
+[1,"Python中continue语句可跳过当前循环剩余部分继续下一次循环。",true,"Python基础"],
+[2,"模型集成是指结合多个模型预测结果以提高准确性。",true,"AI基础"],
+[3,"CNN池化层的作用是减少特征图空间维度。",true,"深度学习-CNN"],
+[4,"AI在音乐创作中无法提供音色选择和创作建议。",false,"AI应用-影视娱乐"],
+[5,"大数据分析结果通常完全准确不含任何偏差。",false,"大数据"],
+[6,"机器学习是AI子集，使用算法识别数据模式。",true,"机器学习"],
+[7,"基于深度学习文本分类通常比传统方法更准确。",true,"NLP"],
+[8,"AI可能通过影响人类思维方式导致智能下降。",true,"AI伦理安全"],
+[9,"语义分割是自然语言处理中的任务。",false,"语义分割"],
+[10,"GNN专为处理图结构数据设计。",true,"机器学习"],
+[11,"Python支持多行字符串。",true,"Python基础"],
+[12,"特征工程在深度学习中是不必要步骤。",false,"机器学习"],
+[13,"GPT模型训练使用自回归语言模型任务。",true,"GPT/大模型"],
+[14,"图像分类中多类别分类与二分类没有区别。",false,"计算机视觉"],
+[15,"Python中可使用f-string格式化字符串。",true,"Python基础"],
+[16,"MP模型是第一个模拟单个神经元的数学模型。",true,"AI基础"],
+[17,"AI生物特征识别只要用户同意就无隐私泄露风险。",false,"AI伦理安全"],
+[18,"人工智能技术只涉及机器学习和深度学习。",false,"AI基础"],
+[19,"CV常用图像增强有直方图均衡/对比度调整等。",true,"计算机视觉"],
+[20,"Python中not运算符优先级高于and和or。",true,"Python基础"],
+[21,"阿尔法狗与李世石对弈展现强大自我学习能力。",true,"AI基础"],
+[22,"激光雷达发射脉冲测量反射时间生成树木三维形态。",true,"AI应用-林业遥感"],
+[23,"AI服装设计中不能预测流行趋势。",false,"AI应用-其他"],
+[24,"半监督直推式学习主要关注无标签数据预测。",true,"机器学习"],
+[25,"《AI伦理建议书》旨在推动技术不关心伦理影响。",false,"AI伦理安全"],
+[26,"MP模型可自动调整权重。",false,"AI基础"],
+[27,"具身智能指智能体仅能在虚拟环境中运作。",false,"AI基础"],
+[28,"Python中0表示False非0表示True。",true,"Python基础"],
+[29,"大数据技术只适用于结构化数据处理。",false,"大数据"],
+[30,"全卷积网络优点是简单直接适合不同大小输入。",true,"深度学习-CNN"],
+[31,"CV医学图像应用对医疗诊断没有显著影响。",false,"AI应用-视觉"],
+[32,"图像去噪目的是消除图像纹理信息。",false,"计算机视觉"],
+[33,"强化学习智能体通过试错学习最佳行为。",true,"机器学习"],
+[34,"Python中//运算符用于执行整数除法。",true,"Python基础"],
+[35,"CV边缘检测主要用于图像去噪。",false,"计算机视觉"],
+[36,"NLP文本去重是识别并去除重复文本过程。",true,"NLP"],
+[37,"大数据分析只能通过结构化数据进行。",false,"大数据"],
+[38,"深度学习学习率越高训练效果越好。",false,"AI基础"],
+[39,"Python中的字典是有序的。",false,"Python基础"],
+[40,"激活函数选择对模型性能没有影响。",false,"AI基础"],
+[41,"所有机器学习模型天然具有抵抗外部攻击能力。",false,"AI伦理安全"],
+[42,"分布式计算是大数据处理重要技术。",true,"大数据"],
+[43,"半监督学习可利用未标记数据提高性能。",true,"机器学习"],
+[44,"匿名化处理通过替换/编码/哈希降低隐私泄露风险。",true,"AI伦理安全"],
+[45,"Python中for循环可遍历列表/元组和字典。",true,"Python基础"],
+[46,"自然语言生成模板方法用预定义模板和槽位。",true,"NLP"],
+[47,"语义一致性是衡量生成文本与输入信息一致性指标。",true,"NLP"],
+[48,"Python支持文件读写但不支持追加操作。",false,"Python基础"],
+[49,"传统图像处理霍夫变换常用于检测直线。",true,"计算机视觉"],
+[50,"句法分析任务是识别句子语法结构。",true,"NLP"],
+[51,"解释型语言执行速度通常比编译型快。",false,"Python基础"],
+[52,"大数据分析结果具有高度可靠性。",false,"大数据"],
+[53,"近红外成像主要用于分析树木外部形态特征。",false,"AI应用-林业遥感"],
+[54,"《生成式AI管理暂行办法》要求遵守法律防止歧视。",true,"AI伦理安全"],
+[55,"GAN由生成器和判别器组成。",true,"GAN"],
+[56,"自动驾驶没有显著提高道路安全性。",false,"AI应用-智慧生活"],
+[57,"到2020年中国AI技术已全面领先世界。",false,"AI基础"],
+[58,"IBM沃森2011年参加智力问答获冠军。",true,"AI基础"],
+[59,"kNN距离度量选择对分类结果没有影响。",false,"机器学习"],
+[60,"Python可使用round()函数四舍五入。",true,"Python基础"],
+[61,"基于神经网络机器翻译比统计模型性能更好。",true,"机器翻译"],
+[62,"CV特征匹配通常依赖图像关键点相似性。",true,"计算机视觉"],
+[63,"反向传播算法用于训练神经网络。",true,"AI基础"],
+[64,"数据安全措施可通过加密防止未授权访问。",true,"AI伦理安全"],
+[65,"算法偏见主要来源于数据偏差与算法设计无关。",false,"AI伦理安全"],
+[66,"预部署测试需进行安全测试和压力测试。",true,"AI应用-其他"],
+[67,"CV人脸检测需先检测出图像中所有人脸。",true,"计算机视觉"],
+[68,"深度学习文本生成需大量训练数据和计算资源。",true,"GPT/大模型"],
+[69,"深度学习模型训练不需要大量数据。",false,"AI基础"],
+[70,"MapReduce是分布式计算框架用于大数据处理。",true,"大数据"],
+[71,"对话系统任务是实现人机间自然语言交互。",true,"NLP"],
+[72,"安防摄像头集成面部识别区分家人和陌生人。",true,"AI应用-视觉"],
+[73,"数据分析目标是生成有价值信息和洞察。",true,"大数据"],
+[74,"2022年OpenAI推出的ChatGPT成为最先进NLP模型。",true,"GPT/大模型"],
+[75,"NLP词汇表是模型能识别和生成的词汇集合。",true,"NLP"],
+[76,"中国语音识别技术已超越美国全球领先。",false,"语音"],
+[77,"索菲亚是第一个获公民身份机器人且在美国授予。",false,"AI基础"],
+[78,"问答系统任务是根据问题提供准确相关答案。",true,"NLP"],
+[79,"CV人脸识别与人脸检测任务相同。",false,"计算机视觉"],
+[80,"图像处理腐蚀操作可扩展对象区域。",false,"计算机视觉"],
+[81,"强化学习智能体动作不考虑当前状态随机选择。",false,"机器学习"],
+[82,"算法步骤无法在有限时间完成仍可称为有效算法。",false,"计算机基础"],
+[83,"RNN时间步数指的是序列长度。",true,"深度学习-RNN/LSTM"],
+[84,"过拟合指模型训练集表现好但验证集表现差。",true,"机器学习"],
+[85,"图像背景减除用于从静态图像提取运动物体。",true,"计算机视觉"],
+[86,"智能家居只能局域网控制无法远程。",false,"AI应用-智慧生活"],
+[87,"机器翻译对齐指源语言和目标语言词汇对应。",true,"机器翻译"],
+[88,"Python函数无明确返回值默认返回None。",true,"Python基础"],
+[89,"AI透明度可解释性不影响公众信任。",false,"AI伦理安全"],
+[90,"林业物联网可实现森林资源全方位实时监测。",true,"AI应用-林业遥感"],
+[91,"NLP分词是将文本切分为单词或子词过程。",true,"NLP"],
+[92,"AI可解释性指系统能清晰展示决策过程和依据。",true,"AI伦理安全"],
+[93,"CV图像裁剪操作会改变图像尺寸。",true,"计算机视觉"],
+[94,"全卷积网络缺点上采样可能丢失精细边界信息。",true,"深度学习-CNN"],
+[95,"2014图灵测试尤金·古斯特曼被认为有成年人智商。",false,"AI基础"],
+[96,"AI安全性仅关注自身防护不涉及数据和隐私。",false,"AI伦理安全"],
+[97,"kNN中k值选择不会影响分类结果。",false,"机器学习"],
+[98,"AlphaGo属于智能语音助手。",false,"AI基础"],
+[99,"Python中==比较内容相等is比较是否同一对象。",true,"Python基础"],
+[100,"图像锐化操作会减弱图像边缘细节。",false,"计算机视觉"],
+[101,"Python变量名可以数字开头。",false,"Python基础"],
+[102,"ChatGPT是生成式AI文本生成领域显著进展。",true,"GPT/大模型"],
+[103,"大数据主要依赖集中式计算处理海量数据。",false,"大数据"],
+[104,"数据预处理是大数据分析最重要步骤之一。",true,"大数据"],
+[105,"隐私保护包括数据最小化尽可能多收集用户数据。",false,"AI伦理安全"],
+[106,"CNN中Dropout层可帮助减少过拟合。",true,"深度学习-CNN"],
+[107,"NLP文本向量化是将文本转为数值向量过程。",true,"NLP"],
+[108,"阿尔法狗和索菲亚都拥有仿生橡胶皮肤模拟表情。",false,"AI基础"],
+[109,"训练时增加数据量通常可提高模型性能。",true,"机器学习"],
+[110,"Python元组是不可变的。",true,"Python基础"],
+[111,"基于规则文本生成不如深度学习方法灵活。",true,"NLP"],
+[112,"生成对抗网络英文缩写是GAN。",true,"GAN"],
+[113,"Python列表可变可进行增删改查。",true,"Python基础"],
+[114,"算法时间复杂度描述最坏情况运行效率。",true,"计算机基础"],
+[115,"基于规则文本分类依赖手工设计特征和规则。",true,"NLP"],
+[116,"准确率是分类任务常用性能指标。",true,"机器学习"],
+[117,"语义相似度计算衡量两文本语义相似程度。",true,"NLP"],
+[118,"Python中10/3结果是整数。",false,"Python基础"],
+[119,"提高算法可解释性有助确保AI公平性和安全性。",true,"AI伦理安全"],
+[120,"重复性劳动岗位更易被AI技术取代。",true,"AI基础"],
+[121,"ReLU比Sigmoid更不易造成梯度消失。",true,"AI基础"],
+[122,"AI音乐创作无法自动生成旋律和和声。",false,"AI应用-影视娱乐"],
+[123,"Python字典通过键值对存储数据。",true,"Python基础"],
+[124,"热红外成像只能监测温度变化无法水分监测。",false,"AI应用-林业遥感"],
+[125,"Python中while循环至少执行一次。",false,"Python基础"],
+[126,"智能音乐系统可根据情绪活动实时调整播放。",true,"AI应用-智慧生活"],
+[127,"AI自诞生以来一直持续增长没有经历兴衰。",false,"AI基础"],
+[128,"BERT是基于Transformer的预训练语言模型。",true,"GPT/大模型"],
+[129,"LeNet-5是现代CNN基本结构之一。",true,"深度学习-CNN"],
+[130,"open()打开文件后需用close()关闭。",true,"Python基础"],
+[131,"PyTorch是ML和深度学习开源框架支持GPU加速。",true,"AI基础"],
+[132,"词嵌入将词汇映射到高维空间向量。",true,"NLP"],
+[133,"目标检测常用候选区域方法检测物体。",true,"目标检测"],
+[134,"无人机和卫星传感器数据无法评估森林立地条件。",false,"AI应用-林业遥感"],
+[135,"CNN主要用于处理序列数据。",false,"深度学习-CNN"],
+[136,"AI术语是1958年在达特茅斯会议提出的。",false,"AI基础"],
+[137,"图像膨胀操作可减少小物体或噪点。",false,"计算机视觉"],
+[138,"Hadoop是分布式存储和计算框架用于大数据。",true,"大数据"],
+[139,"大数据核心特征包括数据量大/多样性高/速度快。",true,"大数据"],
+[140,"AI在影视制作中无法用于生成音效。",false,"AI应用-影视娱乐"],
+[141,"TensorFlow和PyTorch是常用深度学习框架。",true,"AI基础"],
+[142,"AlphaGo2016年以5:0击败李世石。",false,"AI基础"],
+[143,"Waymo是谷歌投入自动驾驶后成立的公司。",true,"AI应用-智慧生活"],
+[144,"词频(Term Frequency)是词汇在文本中出现次数指标。",true,"NLP"],
+[145,"Python中%运算符用于计算余数。",true,"Python基础"],
+[146,"智慧森林监测主要依赖单一地面移动平台采集。",false,"AI应用-林业遥感"],
+[147,"数据结构逻辑结构描述数据元素之间关系。",true,"计算机基础"],
+[148,"自2018年起工业界AI进展速度超过学术界。",true,"AI基础"],
+[149,"强人工智能实现和应用不用面临任何挑战。",false,"AI基础"],
+[150,"深度学习模型越复杂训练效果越好。",false,"AI基础"],
+[151,"AI在科研领域应用降低了研究效率。",false,"AI应用-其他"],
+[152,"CV图像颜色空间转换不影响图像内容。",true,"计算机视觉"],
+[153,"构建适应AI时代治理体系有助技术惠及全人类。",true,"AI伦理安全"],
+[154,"TensorFlow是商业ML框架不支持开源。",false,"AI基础"],
+[155,"CV物体检测通常用标注好的数据集训练。",true,"目标检测"],
+[156,"CV深度学习模型通常比传统ML需更多标注数据。",true,"计算机视觉"],
+[157,"人工智能始终在追求人类智能奥秘。",true,"AI基础"],
+];
+SC_DATA.forEach(q=>Q.push({uid:'s'+q[0],type:'sc',q:q[1],opts:q[2],ans:q[3],cat:q[4]}));
+TF_DATA.forEach(q=>Q.push({uid:'t'+q[0],type:'tf',q:q[1],ans:q[2],cat:q[3]}));
+
+function buildSets(){
+  const su=SC_DATA.map(q=>'s'+q[0]),tu=TF_DATA.map(q=>'t'+q[0]);
+  const sets=[];const sp=Math.ceil(su.length/10),tp=Math.ceil(tu.length/10);
+  sets.push({name:'第 1 套',qs:[...su.slice(0,27),...tu.slice(0,20)]});
+  for(let i=1;i<10;i++){let s=su.slice(27+(i-1)*sp,27+i*sp),t=tu.slice(20+(i-1)*tp,20+i*tp);if(s.length<15)s=[...s,...su.slice(0,15-s.length)];if(t.length<10)t=[...t,...tu.slice(0,10-t.length)];sets.push({name:`第 ${i+1} 套`,qs:[...s,...t].sort(()=>Math.random()-.5)});}
+  return sets;
+}
+const EXAM_SETS=buildSets();
+
+const LS=localStorage;
+function getWB(){try{return new Set(JSON.parse(LS.getItem('aiwb')||'[]'))}catch(e){return new Set()}}
+function saveWB(wb){LS.setItem('aiwb',JSON.stringify([...wb]))}
+function getAns(){try{return JSON.parse(LS.getItem('aians')||'{}')}catch(e){return{}}}
+function saveAns(a){LS.setItem('aians',JSON.stringify(a))}
+let wrongBook=getWB(),allAnswers=getAns();
+function getQ(uid){return Q.find(q=>q.uid===uid)}
+
+function updateStats(){
+  const b=byId('wbBadge');const n=wrongBook.size;b.textContent=n||'';b.style.display=n?'inline':'none';
+  let r=0,w=0;Object.entries(allAnswers).forEach(([uid,ans])=>{const q=getQ(uid);if(!q||ans===-1)return;if(ans===q.ans)r++;else w++});
+  byId('sTotal').textContent=`${Q.length}题`;byId('sRight').textContent=`✅${r}`;byId('sWrong').textContent=`❌${w}`;
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');byId(tab.dataset.panel).classList.add('active');const p=tab.dataset.panel;if(p==='panel-type')renderTM();else if(p==='panel-exam')renderEG();else if(p==='panel-random')renderRS();else if(p==='panel-wrong')renderWB();updateStats();});});
+
+function qCard(q,idx,total){
+  const u=allAnswers[q.uid],answered=u!==undefined&&u!==-1,revealed=u===-1,ok=answered&&u===q.ans;
+  let h=`<div class="card"><div class="q-head"><span class="q-num">${idx+1}/${total}</span><span class="q-tag">${q.cat}</span></div><div class="q-text">${q.type==='sc'?'【单选】':'【判断】'} ${q.q}</div>`;
+  if(q.type==='sc'){q.opts.forEach((o,i)=>{let c='option';if(answered||revealed){if(i===q.ans)c+=' ok';else if(i===u&&answered)c+=' er';}else if(u===i)c+=' sel';h+=`<div class="${c}" onclick="answer('${q.uid}',${i})"><span class="dot">${String.fromCharCode(65+i)}</span>${o}</div>`;});}
+  else{h+=`<div class="tf-row">`;[true,false].forEach(v=>{let c='tf-btn';if(answered||revealed){if(q.ans===v)c+=' ok';else if(u===v&&answered)c+=' er';}else if(u===v)c+=' sel';h+=`<div class="${c}" onclick="answer('${q.uid}',${v})">${v?'✅ 正确':'❌ 错误'}</div>`;});h+=`</div>`;}
+  if(revealed){h+=`<div class="feedback show ok">💡 已查看答案 · 正确答案：${q.type==='sc'?String.fromCharCode(65+q.ans):(q.ans?'正确':'错误')}</div>`}
+  else if(answered){const cor=q.type==='sc'?String.fromCharCode(65+q.ans):(q.ans?'正确':'错误');h+=`<div class="feedback show ${ok?'ok':'er'}">${ok?'🎉 正确！':'😞 错误 · 正确答案：'+cor}</div>`}
+  return h;
+}
+function answer(uid,val){if(allAnswers[uid]!==undefined)return;const q=getQ(uid);if(!q)return;allAnswers[uid]=val;saveAns(allAnswers);if(val!==q.ans){wrongBook.add(uid);saveWB(wrongBook)}updateStats();refreshCurrent();}
+function refreshCurrent(){const ap=document.querySelector('.panel.active');if(!ap)return;if(ap.id==='panel-type'){if(tMode==='browse')renderBrowse();else renderTQ()}else if(ap.id==='panel-exam'&&curExam!==null)renderEQ();else if(ap.id==='panel-random'&&randQs.length>0)renderRQ();else if(ap.id==='panel-wrong'&&wbOn)renderWbQ();}
+
+// ── 面板1：题型 ──
+let tfilt='all',tCat='all',tIdx=0,tQs=[],tMode='quiz',tPage=1;
+function renderTM(){const cats=new Set();Q.forEach(q=>cats.add(q.cat));const sel=byId('catFilter');sel.innerHTML='<option value="all">全部分类</option>';[...cats].sort().forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`);sel.value=tCat;byId('typeFilter').value=tfilt;applyTF();}
+function applyTF(){tfilt=byId('typeFilter').value;tCat=byId('catFilter').value;tQs=Q.filter(q=>{if(tfilt==='sc'&&q.type!=='sc')return false;if(tfilt==='tf'&&q.type!=='tf')return false;if(tCat!=='all'&&q.cat!==tCat)return false;return true;});tIdx=Math.min(tIdx,Math.max(0,tQs.length-1));renderTQ();}
+byId('typeFilter').addEventListener('change',applyTF);byId('catFilter').addEventListener('change',applyTF);
+
+function toggleBrowse(){
+  tMode=tMode==='quiz'?'browse':'quiz';
+  byId('btnBrowse').textContent=tMode==='browse'?'🎯 刷题':'📖 浏览';
+  byId('jumpQuiz').style.display=tMode==='browse'?'none':'flex';
+  if(tMode==='browse'){tPage=1;renderBrowse()}else{renderTQ()}
+}
+
+function renderTQ(){
+  if(tMode==='browse'){renderBrowse();return;}
+  const a=byId('typeQuestion');byId('typeTotal').textContent=`/ ${tQs.length||1}`;byId('typeJump').max=tQs.length||1;byId('typeJump').value=tIdx+1;
+  if(!tQs.length){a.innerHTML='<div class="empty-state">📭 无匹配题目</div>';return}
+  const q=tQs[tIdx],u=allAnswers[q.uid],answered=u!==undefined;
+  a.innerHTML=qCard(q,tIdx,tQs.length)+
+    (!answered?`<div style="margin-top:12px"><button onclick="revealAnswer('${q.uid}')" style="padding:8px 18px;border-radius:20px;border:1px dashed var(--gold);background:rgba(255,149,0,.05);color:var(--gold);cursor:pointer;font-size:13px;font-weight:500">💡 查看答案</button></div>`:'')+
+    `<div class="nav-row"><button class="btn-prev" onclick="tPrev()" ${tIdx===0?'disabled':''}>⬅ 上一题</button><button class="btn-next" onclick="tNext()" ${tIdx>=tQs.length-1?'disabled':''}>下一题 ➡</button></div>`;
+}
+function revealAnswer(uid){
+  if(allAnswers[uid]!==undefined)return;
+  allAnswers[uid]=-1; // revealed but not attempted
+  saveAns(allAnswers);updateStats();renderTQ();
+}
+function tPrev(){if(tIdx>0){tIdx--;renderTQ()}}function tNext(){if(tIdx<tQs.length-1){tIdx++;renderTQ()}}function typeRandom(){tIdx=Math.floor(Math.random()*tQs.length);renderTQ()}
+function typeReset(){if(!confirm('确定重置此分类答题记录？'))return;tQs.forEach(q=>{delete allAnswers[q.uid];wrongBook.delete(q.uid)});saveAns(allAnswers);saveWB(wrongBook);updateStats();renderTQ();}
+byId('typeJump').addEventListener('change',function(){const v=parseInt(this.value);if(v>=1&&v<=tQs.length){tIdx=v-1;renderTQ()}});
+
+// 浏览模式（分页翻看，答案可见）
+function renderBrowse(){
+  const perPage=25,totalPages=Math.ceil(tQs.length/perPage);
+  if(tPage>totalPages)tPage=totalPages;if(tPage<1)tPage=1;
+  const start=(tPage-1)*perPage,end=Math.min(start+perPage,tQs.length);
+  const pageQs=tQs.slice(start,end);
+  let h=browsePager(tPage,totalPages);
+  h+=`<div style="font-size:12px;color:var(--muted);margin-bottom:10px">第 ${start+1}-${end} 题，共 ${tQs.length} 题</div>`;
+  pageQs.forEach((q,i)=>{
+    const idx=start+i,u=allAnswers[q.uid],answered=u!==undefined&&u!==-1,ok=answered&&u===q.ans,revealed=u===-1;
+    let status='';
+    if(answered&&ok)status='<span style="font-size:11px;color:var(--green);margin-left:8px">✅ 答对</span>';
+    else if(answered&&!ok)status='<span style="font-size:11px;color:var(--red);margin-left:8px">❌ 答错</span>';
+    else if(revealed)status='<span style="font-size:11px;color:var(--gold);margin-left:8px">💡 已查看</span>';
+    else status='<span style="font-size:11px;color:var(--muted);margin-left:8px">未作答</span>';
+    h+=`<div class="card" id="bq${idx}" style="padding:18px 22px"><div class="q-head"><span class="q-num">#${idx+1} · ${q.cat}</span>${status}</div><div class="q-text" style="font-size:14px">${q.type==='sc'?'【单选】':'【判断】'} ${q.q}</div>`;
+    if(q.type==='sc'){
+      q.opts.forEach((o,oi)=>{const isAns=oi===q.ans;h+=`<div class="option${isAns?' ok':''}" style="cursor:default;padding:10px 14px;margin-bottom:4px"><span class="dot">${String.fromCharCode(65+oi)}</span>${o}${isAns?' <b style="color:var(--green);margin-left:4px">← 答案</b>':''}</div>`});
+    }else{
+      h+=`<div class="tf-row">`;
+      const tAns=q.ans===true;h+=`<div class="tf-btn${tAns?' ok':''}" style="cursor:default;padding:12px">✅ 正确${tAns?' ← 答案':''}</div>`;
+      h+=`<div class="tf-btn${!tAns?' ok':''}" style="cursor:default;padding:12px">❌ 错误${!tAns?' ← 答案':''}</div></div>`;
+    }
+    h+=`</div>`;
+  });
+  h+=browsePager(tPage,totalPages);
+  byId('typeQuestion').innerHTML=h;
+  byId('typeTotal').textContent=`${tQs.length}题 · ${totalPages}页`;
+  byId('typeQuestion').scrollIntoView({behavior:'smooth'});
+}
+function browsePager(p,total){
+  let ph=`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">`;
+  ph+=`<button onclick="tPage=1;renderBrowse()" ${p<=1?'disabled':''} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:14px">⏮</button>`;
+  ph+=`<button onclick="tPage--;renderBrowse()" ${p<=1?'disabled':''} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:14px">◀</button>`;
+  ph+=`<span style="font-size:14px;font-weight:600;min-width:70px;text-align:center">${p}/${total}</span>`;
+  ph+=`<button onclick="tPage++;renderBrowse()" ${p>=total?'disabled':''} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:14px">▶</button>`;
+  ph+=`<button onclick="tPage=${total};renderBrowse()" ${p>=total?'disabled':''} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:14px">⏭</button>`;
+  ph+=`<span style="font-size:11px;color:var(--muted)">25题/页</span></div>`;
+  return ph;
+}
+
+// ── 面板2：套卷 ──
+let curExam=null,eIdx=0,eQs=[];
+function renderEG(){const g=byId('examGrid');g.style.display='grid';let h='';EXAM_SETS.forEach((s,i)=>{const t=s.qs.length,done=s.qs.filter(u=>allAnswers[u]!==undefined).length,p=t>0?Math.round(done/t*100):0;h+=`<div class="exam-card" onclick="startE(${i})"><h3>📋 ${s.name}</h3><div class="meta"><span>📝 ${t}题</span><span>✅ ${done}</span></div><div class="bar"><div style="width:${p}%"></div></div></div>`;});g.innerHTML=h;}
+function startE(i){curExam=i;eIdx=0;eQs=EXAM_SETS[i].qs.map(u=>getQ(u)).filter(Boolean);byId('examGrid').style.display='block';renderEQ();}
+function renderEQ(){const a=byId('examGrid');if(!eQs.length){a.innerHTML='<div class="empty-state">📭 无题目</div>';return}a.innerHTML=qCard(eQs[eIdx],eIdx,eQs.length)+`<div class="nav-row"><button class="btn-prev" onclick="ePrev()" ${eIdx===0?'disabled':''}>⬅ 上一题</button><span style="font-size:12px;color:var(--muted);align-self:center">${EXAM_SETS[curExam].name}</span><button class="btn-next" onclick="eNext()" ${eIdx>=eQs.length-1?'disabled':''}>下一题 ➡</button></div><div style="text-align:center;margin-top:10px"><button onclick="curExam=null;renderEG()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px">← 返回列表</button></div>`;}
+function ePrev(){if(eIdx>0){eIdx--;renderEQ()}}function eNext(){if(eIdx<eQs.length-1){eIdx++;renderEQ()}}
+
+// ── 面板3：随机组卷（含计时 & 满分显示） ──
+let randQs=[],rIdx=0,rDone=false,rTimer=null,rSeconds=0,rMaxScore=0,rTimeUsed='';
+function renderRS(){
+  if(randQs.length===0||rDone){
+    clearInterval(rTimer);rTimer=null;
+    byId('randomQuiz').style.display='none';
+    byId('randomSetup').innerHTML=`<div class="setup-card"><h2>🎲 随机组卷</h2><p>从题库随机抽取，模拟正式考试<br><span style="color:var(--muted);font-size:13px">单选 <b style="color:var(--accent)">2分/题</b> · 判断 <b style="color:var(--gold)">1分/题</b> · ⏱ 限时 <b style="color:#6366f1">30分钟</b></span></p><div class="setup-row"><label>单选题<br><input id="randSC" type="number" value="30" min="5" max="${SC_DATA.length}" onchange="updateRPreview()"></label><label>判断题<br><input id="randTF" type="number" value="20" min="5" max="${TF_DATA.length}" onchange="updateRPreview()"></label></div><p id="rPreview" style="font-size:14px;color:var(--accent);font-weight:600">满分：30×2 + 20×1 = <b>80分</b></p><button class="btn-primary" onclick="genRand()" style="padding:12px 36px;font-size:16px">🚀 开始组卷</button></div>`;
+  }else{byId('randomSetup').innerHTML='';byId('randomQuiz').style.display='block';renderRQ();}
+}
+function updateRPreview(){
+  const s=parseInt(byId('randSC').value)||30,t=parseInt(byId('randTF').value)||20;
+  const el=byId('rPreview');if(el)el.innerHTML=`满分：${s}×2 + ${t}×1 = <b>${s*2+t}分</b>`;
+}
+function formatTime(sec){const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function genRand(){
+  clearInterval(rTimer);
+  const scN=Math.min(parseInt(byId('randSC').value)||30,SC_DATA.length);
+  const tfN=Math.min(parseInt(byId('randTF').value)||20,TF_DATA.length);
+  rMaxScore=scN*2+tfN*1;
+  const sc=[...SC_DATA].sort(()=>Math.random()-.5).slice(0,scN);
+  const tf=[...TF_DATA].sort(()=>Math.random()-.5).slice(0,tfN);
+  randQs=[...sc.map(q=>'s'+q[0]),...tf.map(q=>'t'+q[0])].sort(()=>Math.random()-.5);
+  rIdx=0;rDone=false;rSeconds=30*60; // 30 min
+  randQs.forEach(u=>{delete allAnswers[u];wrongBook.delete(u)});
+  saveAns(allAnswers);saveWB(wrongBook);updateStats();
+  byId('randomSetup').innerHTML='';byId('randomQuiz').style.display='block';
+  // start timer
+  rTimer=setInterval(()=>{
+    rSeconds--;
+    const el=byId('rTimeDisplay');
+    if(el){el.textContent=formatTime(rSeconds);if(rSeconds<=300)el.classList.add('warn');else el.classList.remove('warn')}
+    if(rSeconds<=0){clearInterval(rTimer);rTimer=null;rDone=true;rTimeUsed='30:00';showRResult();}
+  },1000);
+  renderRQ();
+}
+function renderRQ(){
+  const a=byId('randomQuiz');if(rIdx>=randQs.length||rDone){if(!rDone)showRResult();return}
+  const q=getQ(randQs[rIdx]);if(!q){rIdx++;renderRQ();return}
+  const warn=rSeconds<=300?' warn':'';
+  a.innerHTML=`<div class="timer-bar"><div><span class="label">⏱ 剩余时间</span> <span class="time${warn}" id="rTimeDisplay">${formatTime(rSeconds)}</span></div><div class="max-score">满分：${rMaxScore}分</div></div>`+qCard(q,rIdx,randQs.length)+`<div class="nav-row"><button class="btn-prev" onclick="rPrev()" ${rIdx===0?'disabled':''}>⬅ 上一题</button><button class="btn-next" onclick="rNext()">${rIdx>=randQs.length-1?'交卷 ➡':'下一题 ➡'}</button></div><div style="text-align:center;margin-top:10px"><button onclick="clearInterval(rTimer);rTimer=null;randQs=[];rDone=false;renderRS()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px">← 重新组卷</button></div>`;
+}
+function rPrev(){if(rIdx>0){rIdx--;renderRQ()}}function rNext(){if(rIdx<randQs.length-1){rIdx++;renderRQ()}else{clearInterval(rTimer);rTimer=null;rDone=true;rTimeUsed=formatTime(30*60-rSeconds);showRResult()}}
+function showRResult(){
+  clearInterval(rTimer);rTimer=null;rDone=true;
+  let scTotal=0,scGot=0,tfTotal=0,tfGot=0,r=0,w=0,un=0,answered=0;
+  randQs.forEach(uid=>{const q=getQ(uid);if(!q)return;if(q.type==='sc'){scTotal+=2;if(allAnswers[uid]===q.ans){scGot+=2;r++}else if(allAnswers[uid]!==undefined){w++}else{un++}}else{tfTotal+=1;if(allAnswers[uid]===q.ans){tfGot+=1;r++}else if(allAnswers[uid]!==undefined){w++}else{un++}}});answered=r+w;
+  const total=scTotal+tfTotal,got=scGot+tfGot,maxSc=total;
+  const usedTime=rTimeUsed||(rSeconds<=0?'30:00':formatTime(30*60-rSeconds));
+  byId('randomQuiz').innerHTML=`<div class="result-card"><h2>📊 成绩报告</h2><div class="score-circle"><div class="big">${total>0?Math.round(got/total*100):0}</div><div class="sub">得分率</div></div><div style="font-size:28px;font-weight:700;margin-bottom:4px">${got} / ${maxSc} 分</div><div style="font-size:13px;color:var(--muted);margin-bottom:16px">⏱ 用时 ${usedTime} · 满分 ${maxSc}分</div><div class="score-detail"><div class="item"><div class="val" style="color:var(--accent)">${scGot}/${scTotal}</div><div class="lbl">单选(2分/题)</div></div><div class="item"><div class="val" style="color:var(--gold)">${tfGot}/${tfTotal}</div><div class="lbl">判断(1分/题)</div></div><div class="item"><div class="val" style="color:var(--green)">${r}</div><div class="lbl">✅ 正确</div></div><div class="item"><div class="val" style="color:var(--red)">${w}</div><div class="lbl">❌ 错误</div></div>${un>0?`<div class="item"><div class="val" style="color:var(--muted)">${un}</div><div class="lbl">未作答</div></div>`:''}</div><p style="color:var(--muted);font-size:13px">错题已自动加入错题本</p><button class="btn-primary" onclick="rIdx=0;rDone=false;clearInterval(rTimer);rTimer=null;randQs.forEach(u=>{delete allAnswers[u];wrongBook.delete(u)});saveAns(allAnswers);saveWB(wrongBook);updateStats();rSeconds=30*60;rTimer=setInterval(()=>{rSeconds--;const el=byId('rTimeDisplay');if(el){el.textContent=formatTime(rSeconds);if(rSeconds<=300)el.classList.add('warn');else el.classList.remove('warn')}if(rSeconds<=0){clearInterval(rTimer);rTimer=null;rDone=true;showRResult();}},1000);byId('randomQuiz').style.display='block';renderRQ()" style="padding:10px 24px;margin:8px">🔁 重新作答</button><button onclick="randQs=[];rDone=false;renderRS()" style="padding:10px 24px;border-radius:22px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:14px;margin:8px">🔄 重新组卷</button></div>`;
+}
+
+// ── 面板4：错题本 ──
+let wbOn=false,wbIdx=0,wbQs=[];
+function renderWB(){wbOn=false;byId('wbPractice').style.display='none';byId('wbList').style.display='block';const arr=[...wrongBook].map(u=>getQ(u)).filter(Boolean);byId('wbCount').textContent=`${arr.length} 题`;if(!arr.length){byId('wbList').innerHTML='<div class="empty-state">📭 错题本为空</div>';return}byId('wbList').innerHTML=arr.map(q=>`<div class="wrong-item"><div class="info"><div class="q-text">${q.q}</div><div class="meta">${q.type==='sc'?'单选':'判断'} · ${q.cat}</div></div><button onclick="wbRm('${q.uid}')">✕ 移除</button></div>`).join('')}
+function wbRm(u){wrongBook.delete(u);saveWB(wrongBook);updateStats();renderWB()}
+function wbClear(){if(confirm('清空所有错题？')){wrongBook.clear();saveWB(wrongBook);updateStats();renderWB()}}
+function wbStartPractice(){wbQs=[...wrongBook].map(u=>getQ(u)).filter(Boolean);if(!wbQs.length){alert('错题本为空！');return}wbOn=true;wbIdx=0;byId('wbList').style.display='none';byId('wbPractice').style.display='block';renderWbQ()}
+function renderWbQ(){const a=byId('wbPractice');if(wbIdx>=wbQs.length){wbOn=false;byId('wbList').style.display='block';a.style.display='none';renderWB();return}a.innerHTML=qCard(wbQs[wbIdx],wbIdx,wbQs.length)+`<div class="nav-row"><button class="btn-prev" onclick="wbPrev()" ${wbIdx===0?'disabled':''}>⬅ 上一题</button><button class="btn-next" onclick="wbNext()">${wbIdx>=wbQs.length-1?'完成 ➡':'下一题 ➡'}</button></div><div style="text-align:center;margin-top:10px"><button onclick="wbOn=false;byId('wbList').style.display='block';byId('wbPractice').style.display='none';renderWB()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px">← 返回列表</button></div>`;}
+function wbPrev(){if(wbIdx>0){wbIdx--;renderWbQ()}}function wbNext(){if(wbIdx<wbQs.length-1){wbIdx++;renderWbQ()}else{wbOn=false;byId('wbList').style.display='block';byId('wbPractice').style.display='none';renderWB()}}
+function wbShowAdd(){const h=`<div class="modal-overlay" onclick="if(event.target===this)this.remove()"><div class="modal"><h3>➕ 添加题目到错题本</h3><input class="add-search" placeholder="🔍 搜索题目..." oninput="wbSrch(this.value)"><div class="add-list" id="wbAddLst"></div><button onclick="document.querySelector('.modal-overlay').remove()" style="margin-top:10px;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer">关闭</button></div></div>`;document.body.insertAdjacentHTML('beforeend',h);wbSrch('')}
+function wbSrch(t){const lst=[...Q].filter(q=>!wrongBook.has(q.uid)&&(!t||q.q.includes(t)||q.cat.includes(t))).slice(0,50);const a=byId('wbAddLst');if(!a)return;if(!lst.length){a.innerHTML='<div class="empty-state" style="padding:20px">📭 无匹配</div>';return}a.innerHTML=lst.map(q=>`<div class="add-item"><span>${q.q.substring(0,36)}... <small>(${q.cat})</small></span><button onclick="wbAdd('${q.uid}')">➕ 加入</button></div>`).join('')}
+function wbAdd(u){wrongBook.add(u);saveWB(wrongBook);updateStats();const m=document.querySelector('.modal-overlay');if(m)m.remove();renderWB()}
+
+// ── 分享 ──
+function sharePage(){
+  const title='AI 题库 · 多功能刷题';
+  const text='405道AI/编程练习题，涵盖单选和判断，随时随地刷题！';
+  const url=window.location.href;
+  if(navigator.share){
+    navigator.share({title,text,url}).catch(()=>copyShareLink());
+  }else{
+    copyShareLink();
+  }
+}
+function copyShareLink(){
+  const url=window.location.href;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>alert('链接已复制！可直接粘贴分享给好友\n\n📋 '+url)).catch(()=>alert('分享链接：\n\n📋 '+url));
+  }else{
+    prompt('复制此链接分享给好友：',url);
+  }
+}
+
+// ── 启动 ──
+renderTM();updateStats();
+</script>
+</body>
+</html>
